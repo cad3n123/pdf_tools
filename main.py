@@ -1,42 +1,77 @@
-<!DOCTYPE html>
+import urllib.request
+import sys
+
+print("==== HTML Offline Bundler ====")
+print("Downloading libraries to embed... (This requires internet once)")
+
+# 1. Define the libraries we need
+libs = {
+    "pdf-lib": "https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js",
+    "downloadjs": "https://unpkg.com/downloadjs@1.4.7/download.min.js",
+    "jszip": "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+    "pdfjs": "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js",
+    "pdfworker": "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js"
+}
+
+lib_content = {}
+
+# 2. Download them
+try:
+    for name, url in libs.items():
+        print(f"Fetching {name}...")
+        with urllib.request.urlopen(url) as response:
+            lib_content[name] = response.read().decode('utf-8')
+except Exception as e:
+    print(f"\nError downloading files: {e}")
+    print("Please check your internet connection and try again.")
+    sys.exit(1)
+
+print("Embedding into HTML...")
+
+# 3. The HTML Template (with placeholders for the code)
+html_template = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master PDF Tool</title>
-    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-    <script src="https://unpkg.com/downloadjs@1.4.7/download.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-    
+    <title>Master PDF Tool (Offline)</title>
     <style>
-        :root { --primary: #2563eb; --bg: #f8fafc; --card: #ffffff; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); display: flex; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; color: #333; }
-        .container { background: var(--card); width: 100%; max-width: 600px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow: hidden; }
-        
-        /* Tabs */
-        .tabs { display: flex; background: #e2e8f0; }
-        .tab { flex: 1; padding: 15px; text-align: center; cursor: pointer; font-weight: 600; color: #64748b; transition: 0.2s; border: none; background: none; outline: none; }
-        .tab.active { background: var(--card); color: var(--primary); border-top: 3px solid var(--primary); }
-        
-        /* Content */
-        .content { padding: 30px; display: none; }
-        .content.active { display: block; }
-        
-        h2 { margin-top: 0; }
-        p { color: #666; font-size: 0.9em; margin-bottom: 20px; }
-        
-        /* Inputs & Buttons */
-        .drop-zone { border: 2px dashed #cbd5e1; border-radius: 8px; padding: 40px 20px; text-align: center; margin-bottom: 20px; transition: 0.2s; cursor: pointer; }
-        .drop-zone:hover { border-color: var(--primary); background: #eff6ff; }
-        .btn { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 16px; cursor: pointer; width: 100%; font-weight: 600; transition: 0.2s; }
-        .btn:hover { background: #1d4ed8; }
-        .btn:disabled { background: #94a3b8; cursor: not-allowed; }
-        
-        .status { margin-top: 15px; text-align: center; font-size: 0.9em; min-height: 20px; }
-        .error { color: #dc2626; }
-        .success { color: #16a34a; }
+        :root {{ --primary: #2563eb; --bg: #f8fafc; --card: #ffffff; }}
+        body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); display: flex; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; color: #333; }}
+        .container {{ background: var(--card); width: 100%; max-width: 600px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow: hidden; }}
+        .tabs {{ display: flex; background: #e2e8f0; }}
+        .tab {{ flex: 1; padding: 15px; text-align: center; cursor: pointer; font-weight: 600; color: #64748b; transition: 0.2s; border: none; background: none; outline: none; }}
+        .tab.active {{ background: var(--card); color: var(--primary); border-top: 3px solid var(--primary); }}
+        .content {{ padding: 30px; display: none; }}
+        .content.active {{ display: block; }}
+        h2 {{ margin-top: 0; }}
+        p {{ color: #666; font-size: 0.9em; margin-bottom: 20px; }}
+        .drop-zone {{ border: 2px dashed #cbd5e1; border-radius: 8px; padding: 40px 20px; text-align: center; margin-bottom: 20px; transition: 0.2s; cursor: pointer; }}
+        .drop-zone:hover {{ border-color: var(--primary); background: #eff6ff; }}
+        .btn {{ background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 16px; cursor: pointer; width: 100%; font-weight: 600; transition: 0.2s; }}
+        .btn:hover {{ background: #1d4ed8; }}
+        .status {{ margin-top: 15px; text-align: center; font-size: 0.9em; min-height: 20px; }}
+        .error {{ color: #dc2626; }}
+        .success {{ color: #16a34a; }}
     </style>
+    
+    <script>
+    /* pdf-lib */
+    {lib_content['pdf-lib']}
+    
+    /* downloadjs */
+    {lib_content['downloadjs']}
+    
+    /* jszip */
+    {lib_content['jszip']}
+    
+    /* pdf.js */
+    {lib_content['pdfjs']}
+    
+    /* pdf.worker.js logic */
+    const workerBlob = new Blob([`{lib_content['pdfworker'].replace('`', '\\`')}`], {{ type: 'text/javascript' }});
+    pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(workerBlob);
+    </script>
 </head>
 <body>
 
@@ -82,131 +117,113 @@
 </div>
 
 <script>
-    // --- SETUP ---
-    // Point PDF.js to the worker on CDN
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-
-    function switchTab(id) {
+    function switchTab(id) {{
         document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         event.target.classList.add('active');
         clearStatus();
-    }
+    }}
 
-    function updateLabel(inputId, labelId) {
+    function updateLabel(inputId, labelId) {{
         const input = document.getElementById(inputId);
         const count = input.files.length;
-        document.getElementById(labelId).innerText = count > 0 ? `${count} file(s) selected` : "Click to select";
-    }
+        document.getElementById(labelId).innerText = count > 0 ? count + " file(s) selected" : "Click to select";
+    }}
 
-    function setStatus(id, msg, type) {
+    function setStatus(id, msg, type) {{
         const el = document.getElementById(id);
         el.innerText = msg;
         el.className = 'status ' + type;
-    }
+    }}
 
-    function clearStatus() {
+    function clearStatus() {{
         document.querySelectorAll('.status').forEach(el => el.innerText = '');
-    }
+    }}
 
-    async function readFileAsArrayBuffer(file) {
-        return new Promise((resolve, reject) => {
+    async function readFileAsArrayBuffer(file) {{
+        return new Promise((resolve, reject) => {{
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result);
             reader.onerror = reject;
             reader.readAsArrayBuffer(file);
-        });
-    }
+        }});
+    }}
 
-    // --- LOGIC: MERGE ---
-    async function mergePDFs() {
+    // MERGE
+    async function mergePDFs() {{
         const files = document.getElementById('mergeInput').files;
         if (files.length === 0) return setStatus('mergeStatus', 'Please select files first.', 'error');
-        
         setStatus('mergeStatus', 'Merging...', '');
-        try {
+        try {{
             const mergedPdf = await PDFLib.PDFDocument.create();
-            for (let file of files) {
+            for (let file of files) {{
                 const bytes = await readFileAsArrayBuffer(file);
                 const pdf = await PDFLib.PDFDocument.load(bytes);
                 const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
                 copiedPages.forEach((page) => mergedPdf.addPage(page));
-            }
+            }}
             const pdfBytes = await mergedPdf.save();
             download(pdfBytes, "merged.pdf", "application/pdf");
             setStatus('mergeStatus', 'Done!', 'success');
-        } catch (e) {
-            setStatus('mergeStatus', 'Error: ' + e.message, 'error');
-        }
-    }
+        }} catch (e) {{ setStatus('mergeStatus', 'Error: ' + e.message, 'error'); }}
+    }}
 
-    // --- LOGIC: REVERSE ---
-    async function reversePDF() {
+    // REVERSE
+    async function reversePDF() {{
         const file = document.getElementById('reverseInput').files[0];
         if (!file) return setStatus('reverseStatus', 'Please select a file.', 'error');
-
         setStatus('reverseStatus', 'Processing...', '');
-        try {
+        try {{
             const bytes = await readFileAsArrayBuffer(file);
             const pdfDoc = await PDFLib.PDFDocument.load(bytes);
             const pageCount = pdfDoc.getPageCount();
-            
-            // Create new doc and add pages in reverse
             const newPdf = await PDFLib.PDFDocument.create();
-            for (let i = pageCount - 1; i >= 0; i--) {
+            for (let i = pageCount - 1; i >= 0; i--) {{
                 const [page] = await newPdf.copyPages(pdfDoc, [i]);
                 newPdf.addPage(page);
-            }
-            
+            }}
             const pdfBytes = await newPdf.save();
             download(pdfBytes, "reversed.pdf", "application/pdf");
             setStatus('reverseStatus', 'Done!', 'success');
-        } catch (e) {
-            setStatus('reverseStatus', 'Error: ' + e.message, 'error');
-        }
-    }
+        }} catch (e) {{ setStatus('reverseStatus', 'Error: ' + e.message, 'error'); }}
+    }}
 
-    // --- LOGIC: PDF TO PNG ---
-    async function pdfToPng() {
+    // TO PNG
+    async function pdfToPng() {{
         const file = document.getElementById('pngInput').files[0];
         if (!file) return setStatus('pngStatus', 'Please select a file.', 'error');
-
-        setStatus('pngStatus', 'Converting pages... (this may take a moment)', '');
-        
-        try {
+        setStatus('pngStatus', 'Converting... (may take time)', '');
+        try {{
             const fileData = await readFileAsArrayBuffer(file);
             const pdf = await pdfjsLib.getDocument(fileData).promise;
             const zip = new JSZip();
-            
-            for (let i = 1; i <= pdf.numPages; i++) {
-                setStatus('pngStatus', `Converting page ${i} of ${pdf.numPages}...`, '');
+            for (let i = 1; i <= pdf.numPages; i++) {{
+                setStatus('pngStatus', 'Converting page ' + i + ' of ' + pdf.numPages + '...', '');
                 const page = await pdf.getPage(i);
-                const viewport = page.getViewport({ scale: 2.0 }); // High res
-                
+                const viewport = page.getViewport({{ scale: 2.0 }});
                 const canvas = document.createElement('canvas');
                 const context = canvas.getContext('2d');
                 canvas.height = viewport.height;
                 canvas.width = viewport.width;
-
-                await page.render({ canvasContext: context, viewport: viewport }).promise;
-                
-                // Add to ZIP
+                await page.render({{ canvasContext: context, viewport: viewport }}).promise;
                 const dataUrl = canvas.toDataURL('image/png');
-                const base64Data = dataUrl.replace(/^data:image\/(png|jpg);base64,/, "");
-                zip.file(`page_${i}.png`, base64Data, {base64: true});
-            }
-
+                zip.file('page_' + i + '.png', dataUrl.split(',')[1], {{base64: true}});
+            }}
             setStatus('pngStatus', 'Zipping...', '');
-            const content = await zip.generateAsync({type:"blob"});
+            const content = await zip.generateAsync({{type:"blob"}});
             download(content, "converted_pages.zip");
-            setStatus('pngStatus', 'Done! Check your downloads.', 'success');
-
-        } catch (e) {
-            console.error(e);
-            setStatus('pngStatus', 'Error. If this persists, try Chrome or Edge.', 'error');
-        }
-    }
+            setStatus('pngStatus', 'Done!', 'success');
+        }} catch (e) {{ setStatus('pngStatus', 'Error: ' + e.message, 'error'); }}
+    }}
 </script>
 </body>
 </html>
+"""
+
+# 4. Save the offline file
+with open("MasterPDFTool_Offline.html", "w", encoding="utf-8") as f:
+    f.write(html_template)
+
+print("\nSuccess! Created 'MasterPDFTool_Offline.html'")
+print("You can now move this file to any computer (even without internet) and it will work.")
