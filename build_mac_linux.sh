@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# !!! CONFIGURATION: REPLACE THIS URL !!!
+# --- CONFIGURATION ---
 UPDATE_URL="https://raw.githubusercontent.com/cad3n123/pdf_tools/main/MasterPDFTool_Offline.html"
 VERSION="1.0"
 OUTFILE="MasterPDFTool_Offline.html"
